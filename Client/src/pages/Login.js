@@ -1,51 +1,33 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../style/Login.css';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
   const navigate = useNavigate();
 
-  
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
-    const loginData = {
-      email,
-      password,
-    };
-  
+
     try {
-      const response = await fetch('http://localhost:4000/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData),
+      const response = await axios.post('http://localhost:4000/login', {
+        email,
+        password,
       });
-  
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Login successful:', result);
-        navigate('/dashboard'); 
-      } else {
-        const errorData = await response.json();
-        console.error('Error logging in:', errorData);
-  
-                if (errorData.error) {
-          alert(errorData.error);
-        } else {
-          alert('Failed to log in. Please check your email and password.');
-        }
+
+      if (response.status === 200) {
+        // Handle successful login (e.g., store token, redirect)
+        console.log('Login successful:', response.data);
+        alert('Login successful!');
+        navigate('/dashboard'); // Redirect to the dashboard or any other page
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again later.');
+      console.error('Error logging in:', error);
+      alert('Login failed. Please check your credentials and try again.');
     }
   };
-  
 
   return (
     <div className="login-container">
@@ -72,7 +54,7 @@ const Login = () => {
                   />
                 </td>
               </tr>
-              <br></br>
+              <br />
               <tr>
                 <td>
                   <label htmlFor="password" className="input-icon">
@@ -92,10 +74,10 @@ const Login = () => {
               </tr>
               <tr>
                 <td colSpan="2">
-                   <a href="#" className="forgot-password">Forgot Password?</a>
+                  <a href="/froget" className="forgot-password">Forgot Password?</a>
                 </td>
               </tr>
-             <tr>
+              <tr>
                 <td colSpan="2">
                   <button type="submit" className="login-button">LOGIN</button>
                 </td>
