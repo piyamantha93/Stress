@@ -72,11 +72,11 @@ const Login = () => {
                   />
                 </td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td colSpan="2">
-                  <a href="/froget" className="forgot-password">Forgot Password?</a>
+                  <a href="" className="forgot-password">Forgot Password?</a>
                 </td>
-              </tr>
+              </tr> */}
               <tr>
                 <td colSpan="2">
                   <button type="submit" className="login-button">LOGIN</button>

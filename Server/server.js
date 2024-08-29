@@ -4,31 +4,33 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const User = require('./model/user'); // Import your User model
-
+const axios = require('axios');
+const User = require('./model/user'); 
+require('dotenv').config(); 
+require('./db/connection'); 
 app.use(express.json());
 app.use(cors());
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+const { PythonShell } = require('python-shell');
+app.use(bodyParser.json());
 
+const jwtSecret = process.env.JWT_SECRET;
 
-
-
-require('./db/connection');
-
-
-
-
-// Middleware to check if user is authenticated
+// Authentication middleware
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (token == null) return res.sendStatus(401);
 
-  jwt.verify(token, 'your_jwt_secret', (err, user) => {
+  jwt.verify(token, jwtSecret, (err, user) => {
     if (err) return res.sendStatus(403);
     req.user = user;
     next();
   });
 };
+
+// Prediction Route
 
 // User Signup Route
 app.post('/signup', async (req, res) => {
@@ -70,8 +72,8 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ email: user.email, name: user.name }, 'your_jwt_secret', {
-      expiresIn: '1h', // Token expiration time
+    const token = jwt.sign({ email: user.email, name: user.name }, jwtSecret, {
+      expiresIn: '1h',
     });
 
     res.json({ token });
@@ -88,8 +90,6 @@ app.get('/protected', authenticateToken, (req, res) => {
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-// User model, database connection, etc.
-
 // Forgot Password Route
 app.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
@@ -100,27 +100,24 @@ app.post('/forgot-password', async (req, res) => {
       return res.status(404).json({ message: 'Email not found' });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(20).toString('hex');
-    const resetTokenExpiry = Date.now() + 3600000; // 1 hour expiry
+    const resetTokenExpiry = Date.now() + 3600000;
 
-    // Save reset token and expiry to user's document
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = resetTokenExpiry;
     await user.save();
 
-    // Send email with reset token link
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
-        user: 'your-email@gmail.com',
-        pass: 'your-email-password',
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
       to: user.email,
-      from: 'your-email@gmail.com',
+      from: process.env.EMAIL_USER,
       subject: 'Password Reset',
       text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
       Please click on the following link, or paste this into your browser to complete the process within one hour of receiving it:\n\n
@@ -139,6 +136,7 @@ app.post('/forgot-password', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
 // Reset Password Route
 app.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
@@ -154,10 +152,8 @@ app.post('/reset-password/:token', async (req, res) => {
       return res.status(400).json({ message: 'Password reset token is invalid or has expired' });
     }
 
-    // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update user's password
     user.password = hashedPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
@@ -168,6 +164,17 @@ app.post('/reset-password/:token', async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 });
+
+// app.post('/predict', (req, res) => {
+//   try {
+//       const inputData = req.body; // Make sure this matches your expected input
+//       const prediction = model.predict([inputData]); // Assuming your model is loaded and `model.predict` is available
+//       res.json({ prediction: prediction[0] });
+//   } catch (error) {
+//       console.error('Error during prediction:', error);
+//       res.status(500).json({ error: 'Internal Server Error' });
+//   }
+// });
 
 // Start the server
 const PORT = process.env.PORT || 4000;
