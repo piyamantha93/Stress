@@ -13,12 +13,9 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 with open('Model_RF.pkl', 'rb') as file:
     model = pickle.load(file)
 
-# Initialize LabelEncoders for categorical features
 gender_encoder = LabelEncoder()
 occupation_encoder = LabelEncoder()
 
-# Example of fitting encoders (you should fit these on your training data)
-# Here we simulate fitting with dummy data, adjust as per your actual data
 gender_encoder.fit([0, 1])
 occupation_encoder.fit([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
