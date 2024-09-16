@@ -9,6 +9,9 @@ import Dashboard from './pages/Dashbord';
 import Navbar from "./component/Navbar";
 import Footer from "./component/Footer";
 
+
+
+
 function App() {
   return (
     <Router>
@@ -18,6 +21,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
 
+         
           <Route path="*" element={
             <>
               <Navbar />

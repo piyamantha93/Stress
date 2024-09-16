@@ -24,21 +24,26 @@ const Dashboard = () => {
             [e.target.name]: e.target.value
         });
     };
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:3001/predict', formData);
-            setPrediction(response.data.prediction);
-            if (response.data.prediction > 6) {
-                setLevel('Your Stress level is High.');
-            } else {
-                setLevel('Your Stress level is Normal.');
+          const token = localStorage.getItem('token');
+          const response = await axios.post('http://localhost:3001/predict', formData, {
+            headers: {
+              'Authorization': `Bearer ${token}`
             }
+          });
+          setPrediction(response.data.prediction);
+          if (response.data.prediction > 6) {
+            setLevel('Your Stress level is High.');
+          } else {
+            setLevel('Your Stress level is Normal.');
+          }
         } catch (error) {
-            console.error('Error making prediction:', error);
+          console.error('Error making prediction:', error);
         }
-    };
+      };
 
     return (
         <Container className="dashboard-container" maxWidth="sm">
